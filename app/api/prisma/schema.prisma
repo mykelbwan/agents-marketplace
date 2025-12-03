@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum ExecutionStatus {
+  PAID
+  RUNNING
+  FAILED
+  REFUNDED
+  CHARGEBACK
+}
+
+enum PayoutStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  address   String   @unique
+  username  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Agent {
+  id             String           @id @default(cuid())
+  name           String           @unique
+  address        String
+  cost           Decimal          @db.Decimal(10, 6)
+  currency       String           @default("USDC")
+  platformFeeBp  Int?
+  description    String
+  category       String
+  version        String
+  codePath       String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  isActive       Boolean          @default(true)
+  metadata       Json?
+  AgentExecution AgentExecution[]
+
+  @@index([address])
+}
+
+model AgentExecution {
+  id String @id @default(cuid())
+
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id])
+
+  userAddress      String
+  developerAddress String
+
+  // Financial snapshot (IMMUTABLE)
+  price        Decimal @db.Decimal(10, 6)
+  platformFee  Decimal @db.Decimal(10, 6)
+  developerNet Decimal @db.Decimal(10, 6)
+  currency     String  @default("USDC")
+
+  // Proof
+  txHash  String? @unique // from x402 / facilitator
+  receipt Json?
+
+  status ExecutionStatus @default(PAID)
+
+  createdAt DateTime @default(now())
+
+  @@index([agentId])
+  @@index([developerAddress])
+}
+
+model DeveloperBalance {
+  developerAddress String @id
+
+  currency      String  @default("USDC")
+  pendingAmount Decimal @db.Decimal(18, 6)
+  paidAmount    Decimal @default(0) @db.Decimal(18, 6)
+
+  lastPayoutAt DateTime?
+
+  updatedAt DateTime @updatedAt
+}
+
+model Payout {
+  id String @id @default(cuid())
+
+  developerAddress String
+  amount           Decimal @db.Decimal(18, 6)
+  currency         String  @default("USDC")
+
+  txHash String?      @unique
+  status PayoutStatus @default(PENDING)
+
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+}
