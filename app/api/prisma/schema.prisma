@@ -13,7 +13,7 @@ enum ExecutionStatus {
   RUNNING
   FAILED
   REFUNDED
-  CHARGEBACK
+  SUCCESS
 }
 
 enum PayoutStatus {

@@ -12,12 +12,20 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^7.0.0",
+		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.47.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"svelte": "^5.41.0",
 		"svelte-check": "^4.3.3",
 		"typescript": "^5.9.3",
 		"vite": "^7.1.10"
+	},
+	"dependencies": {
+		"@tailwindcss/vite": "^4.1.17",
+		"axios": "^1.13.2",
+		"tailwindcss": "^4.1.17",
+		"thirdweb": "^5.115.2",
+		"viem": "^2.41.2",
+		"x402-axios": "^0.7.2"
 	}
 }

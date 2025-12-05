@@ -1,2 +1,5 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<h1>WELCOME</h1>
+
+<a href="/profile">profile</a>
+<a href="/agents">browse agents</a>
+<a href="/register-agent">register an agent</a>

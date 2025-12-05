@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CATEGORIES } from "../lib/agent.categories";
+import { CATEGORIES, assertValidCategory } from "../lib/agent.categories";
 import { prisma } from "../lib/prisma";
 
 export const getCategories = (_req: Request, res: Response) => {
@@ -13,27 +13,11 @@ export const getCategories = (_req: Request, res: Response) => {
   });
 };
 
-// For a given developerAddress:
-//   totalExecutions
-//   successfulExecutions
-//   failedExecutions
-//   totalRevenue (gross)
-//   platformFees
-//   netEarnings
-//   pendingBalance
-//   paidOut
-//   lastPayoutAt
-
-// Time-scoped metrics (important)
-//   last 24h
-//   last 7d
-//   last 30d
-//   custom range (optional)
-
 export const getDevMetrics = async (req: Request, res: Response) => {
-  // if (!req.user) return res.status(401).json({ error: "Unauthorized" }); // TODO uncomment after the fix bellow
+  if (!(req as any).user)
+    return res.status(401).json({ error: "Unauthorized" });
 
-  const developerAddress = "will fix it later"; // TODO add req.user.address
+  const developerAddress = (req as any).user?.address;
   const from = req.query.from ? new Date(req.query.from as string) : undefined;
   const to = req.query.to ? new Date(req.query.to as string) : undefined;
 
@@ -83,4 +67,75 @@ export const getDevMetrics = async (req: Request, res: Response) => {
     },
     byStatus: executionsByStatus,
   });
+};
+
+export const getAgentsByCategory = async (req: Request, res: Response) => {
+  const { category } = req.params;
+  if (!category) res.status(400).json({ error: "category is undefined" });
+
+  try {
+    if (category) {
+      assertValidCategory(category);
+    }
+
+    const agents = await prisma.agent.findMany({
+      where: { category: category! },
+      select: {
+        id: true,
+        name: true,
+        cost: true,
+        category: true,
+        currency: true,
+        isActive: true,
+        description: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.json({ agents });
+  } catch (err: any) {
+    console.log("Failed to fetch agent:", err);
+
+    return res
+      .status(400)
+      .json({ error: err.message ?? "Failed to fetch agents" });
+  }
+};
+
+export const getAgentById = async (req: Request, res: Response) => {
+  const { agentId } = req.params;
+
+  if (!agentId) {
+    return res.status(400).json({ error: "agentId is required" });
+  }
+
+  try {
+    const agent = await prisma.agent.findUnique({
+      where: { id: agentId },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        category: true,
+        cost: true,
+        currency: true,
+        version: true,
+        isActive: true,
+        createdAt: true,
+      },
+    });
+
+    if (!agent) {
+      return res.status(404).json({ error: "Agent not found" });
+    }
+
+    return res.json({ agent });
+  } catch (err: any) {
+    console.error("Failed to fetch agent:", err);
+    return res.status(500).json({
+      error: "Failed to fetch agent",
+    });
+  }
 };

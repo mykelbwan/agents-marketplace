@@ -1,10 +1,13 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import "dotenv/config";
 
-const JWT_SECRET = process.env.JWT_SECRET || "undefined";
-if (!JWT_SECRET) throw new Error("JWT_SECRET not set");
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET not set");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
-interface JwtPayload {
+export interface JwtPayload {
   id: number;
   address: string;
 }
@@ -12,7 +15,6 @@ interface JwtPayload {
 export const signToken = (data: any) => {
   return jwt.sign(data, JWT_SECRET, { expiresIn: "7d" });
 };
-
 
 export const authMiddleware = (
   req: Request,
