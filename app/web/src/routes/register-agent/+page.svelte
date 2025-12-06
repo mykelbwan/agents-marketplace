@@ -37,7 +37,7 @@
   async function getCategories(): Promise<Category[]> {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Wallet not connected");
-    
+
     const res = await axios.get(
       `${env.PUBLIC_MAIN_URL}/api/api-routes/categories`,
       {
@@ -83,9 +83,11 @@
       // const agent = await res.data.agent;
       success = await res.data.success;
 
-      // if (success) {
-      //   goto("/agents", { replaceState: true });
-      // }
+      if (success) {
+        // Wait for 10 milliseconds
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        goto("/agents", { replaceState: true });
+      }
     } catch (err: any) {
       error = err.error || err.response?.data?.error || err.message;
     } finally {

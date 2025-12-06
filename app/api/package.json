@@ -5,8 +5,9 @@
   "main": "server.ts",
   "scripts": {
     "dev": "ts-node src/server.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
+    "build": "pnpm run prisma:generate && tsc && cp -R src/generated dist/generated",
+    "prisma:generate": "npx prisma generate",
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "mykel",
